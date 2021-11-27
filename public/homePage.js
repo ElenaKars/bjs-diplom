@@ -19,7 +19,6 @@ const ratesBoard = new RatesBoard();
 const getStocks = () => {
   ApiConnector.getStocks( ( res ) => {
     if ( res.success ) {
-      console.log(res);
       ratesBoard.clearTable()
       ratesBoard.fillTable(res.data)
     }
@@ -28,6 +27,71 @@ const getStocks = () => {
 
 getStocks()
 
-setInterval(() => {
-  getStocks()
-}, 60000);
+setInterval(getStocks, 60000);
+
+const moneyManager = new MoneyManager()
+
+moneyManager.addMoneyCallback = (data) => {
+  ApiConnector.addMoney( data, ( res ) => {
+    if ( res.success ) {
+      ProfileWidget.showProfile( res.data )
+    }
+
+    moneyManager.setMessage(res.success, res.error || 'Успешно!')
+  })
+}
+
+moneyManager.conversionMoneyCallback = ( data ) => {
+    ApiConnector.convertMoney( data, (res) => {
+      if ( res.success ) {
+        ProfileWidget.showProfile( res.data )
+      }
+  
+      moneyManager.setMessage(res.success, res.error || 'Успешно!')
+    })
+  }
+
+  moneyManager.sendMoneyCallback = ( data ) => {
+    ApiConnector.transferMoney( data, ( res ) => {
+      if ( res.success ) {
+        ProfileWidget.showProfile( res.data )
+      }
+  
+      moneyManager.setMessage(res.success, res.error || 'Успешно!')
+    })
+  }
+  
+  const favoritesWidget = new FavoritesWidget()
+
+    ApiConnector.getFavorites( ( res ) => {
+      if ( res.success ) {
+        favoritesWidget.clearTable()
+        favoritesWidget.fillTable( res.data )
+        moneyManager.updateUsersList(res.data)
+      }
+    })
+
+    favoritesWidget.addUserCallback = (data) => {
+        ApiConnector.addUserToFavorites( data, ( res ) => {
+          if ( res.success ) {
+            favoritesWidget.clearTable()
+            favoritesWidget.fillTable( res.data )
+            moneyManager.updateUsersList(res.data)
+          }
+      
+          moneyManager.setMessage(res.success, res.error || 'Успешно!')
+        })
+      }
+
+      favoritesWidget.removeUserCallback = ( data ) => {
+        ApiConnector.removeUserFromFavorites( data, ( res ) => {
+          if ( res.success ) {
+            favoritesWidget.clearTable()
+            favoritesWidget.fillTable( res.data )
+            moneyManager.updateUsersList(res.data)
+          }
+      
+          moneyManager.setMessage(res.success, res.error || 'Успешно!')
+        })
+      }
+
